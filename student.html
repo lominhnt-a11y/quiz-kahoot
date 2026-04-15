@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Học sinh</title>
+  <style>
+    :root{
+      --bg1:#160f33;
+      --bg2:#080a1a;
+      --text:#fff;
+      --muted:#c7cced;
+      --red:#ef4444;
+      --blue:#3b82f6;
+      --yellow:#facc15;
+      --green:#22c55e;
+      --card:rgba(18,22,45,.92);
+      --line:rgba(255,255,255,.08);
+      --shadow:0 18px 50px rgba(0,0,0,.28);
+      --radius:28px;
+    }
+
+    * { box-sizing:border-box; }
+    html, body { margin:0; padding:0; min-height:100%; }
+
+    body{
+      font-family: Inter, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, #4c1d95 0%, transparent 35%),
+        radial-gradient(circle at top right, #1d4ed8 0%, transparent 30%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:560px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+
+    .join-card h1{
+      margin:0 0 8px 0;
+      font-size:34px;
+      font-weight:1000;
+    }
+
+    .subtitle{
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.5;
+      margin-bottom:18px;
+    }
+
+    input{
+      width:100%;
+      border:none;
+      outline:none;
+      border-radius:18px;
+      background:#0b1024;
+      color:#fff;
+      padding:16px 18px;
+      font-size:18px;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+      margin-bottom:12px;
+    }
+
+    button{
+      border:none;
+      cursor:pointer;
+      font:inherit;
+      transition:transform .15s ease, opacity .15s ease;
+    }
+
+    button:hover{ transform:translateY(-1px); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .join-btn{
+      width:100%;
+      border-radius:18px;
+      padding:16px;
+      font-size:18px;
+      font-weight:1000;
+      color:#fff;
+      background:linear-gradient(135deg,#8b5cf6,#3b82f6);
+    }
+
+    #controller{
+      display:none;
+    }
+
+    .top{
+      display:grid;
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .chip{
+      background:rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:14px;
+      text-align:center;
+    }
+
+    .chip-title{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .chip-value{
+      font-size:24px;
+      font-weight:1000;
+      line-height:1;
+    }
+
+    .big-status{
+      background:linear-gradient(135deg, rgba(139,92,246,.28), rgba(59,130,246,.18));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:24px;
+      padding:18px;
+      margin-bottom:16px;
+    }
+
+    .big-line{
+      font-size:28px;
+      font-weight:1000;
+      line-height:1.3;
+      margin:0 0 10px 0;
+    }
+
+    .small-line{
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.5;
+    }
+
+    .answer-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .answer-btn{
+      min-height:122px;
+      border-radius:26px;
+      color:#fff;
+      font-size:56px;
+      font-weight:1000;
+      box-shadow:var(--shadow);
+    }
+
+    .answer-btn.a{ background:linear-gradient(135deg,#ef4444,#b91c1c); }
+    .answer-btn.b{ background:linear-gradient(135deg,#3b82f6,#1d4ed8); }
+    .answer-btn.c{ background:linear-gradient(135deg,#facc15,#f59e0b); color:#1f2937; }
+    .answer-btn.d{ background:linear-gradient(135deg,#22c55e,#15803d); }
+
+    .answer-btn.disabled{
+      opacity:.38;
+      pointer-events:none;
+      filter:grayscale(.1);
+    }
+
+    .footer-note{
+      margin-top:16px;
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    @media (max-width: 600px){
+      .meta{ grid-template-columns:1fr; }
+      .big-line{ font-size:22px; }
+      .answer-btn{ min-height:100px; font-size:48px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="joinCard" class="card join-card">
+      <h1>Vào phòng thi</h1>
+      <div class="subtitle">Màn hình này chỉ hiện tên, mã phòng và các nút bấm đáp án. Câu hỏi sẽ được giáo viên chiếu trên bảng.</div>
+
+      <input id="roomIdInput" placeholder="Nhập mã phòng" value="11A1" />
+      <input id="nameInput" placeholder="Nhập tên học sinh" />
+      <button id="joinBtn" class="join-btn">Vào phòng</button>
+    </div>
+
+    <div id="controller">
+      <div class="card">
+        <div class="top">
+          <div class="meta">
+            <div class="chip">
+              <div class="chip-title">Phòng</div>
+              <div id="roomBadge" class="chip-value">----</div>
+            </div>
+            <div class="chip">
+              <div class="chip-title">Điểm</div>
+              <div id="scoreBadge" class="chip-value">0</div>
+            </div>
+            <div class="chip">
+              <div class="chip-title">Trạng thái</div>
+              <div id="statusBadge" class="chip-value" style="font-size:20px;">Chờ</div>
+            </div>
+          </div>
+
+          <div class="big-status">
+            <p id="promptLine" class="big-line">Chờ giáo viên bắt đầu.</p>
+            <div id="answerStatus" class="small-line">Bạn chưa chọn đáp án.</div>
+          </div>
+        </div>
+
+        <div id="answerGrid" class="answer-grid">
+          <button class="answer-btn a disabled" data-answer="A">A</button>
+          <button class="answer-btn b disabled" data-answer="B">B</button>
+          <button class="answer-btn c disabled" data-answer="C">C</button>
+          <button class="answer-btn d disabled" data-answer="D">D</button>
+        </div>
+
+        <div class="footer-note">Chỉ cần nhìn bảng và bấm A / B / C / D trên điện thoại.</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      get,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBVbElFcTs66KuPlNZA7io48u7gv2Fv9EE",
+      authDomain: "kahoot-toan-11.firebaseapp.com",
+      databaseURL: "https://kahoot-toan-11-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "kahoot-toan-11",
+      storageBucket: "kahoot-toan-11.firebasestorage.app",
+      messagingSenderId: "344110560956",
+      appId: "1:344110560956:web:a1185a025aefa7c40682b9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const joinCard = document.getElementById("joinCard");
+    const controller = document.getElementById("controller");
+    const roomIdInput = document.getElementById("roomIdInput");
+    const nameInput = document.getElementById("nameInput");
+    const joinBtn = document.getElementById("joinBtn");
+
+    const roomBadge = document.getElementById("roomBadge");
+    const scoreBadge = document.getElementById("scoreBadge");
+    const statusBadge = document.getElementById("statusBadge");
+    const promptLine = document.getElementById("promptLine");
+    const answerStatus = document.getElementById("answerStatus");
+    const answerButtons = [...document.querySelectorAll(".answer-btn")];
+
+    let studentId = localStorage.getItem("quiz_student_id") || "";
+    let roomId = "";
+    let studentName = "";
+    let lastQuestionIndex = -999;
+    let currentRoomUnsubscribe = null;
+
+    if (!studentId) {
+      studentId = "s_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("quiz_student_id", studentId);
+    }
+
+    function getRoomPath() {
+      return `rooms/${roomId}`;
+    }
+
+    function getPlayerPath() {
+      return `rooms/${roomId}/players/${studentId}`;
+    }
+
+    function getAnswerPath() {
+      return `rooms/${roomId}/answers/${studentId}`;
+    }
+
+    function disableButtons() {
+      answerButtons.forEach(btn => btn.classList.add("disabled"));
+    }
+
+    function enableButtons() {
+      answerButtons.forEach(btn => btn.classList.remove("disabled"));
+    }
+
+    async function joinRoom() {
+      roomId = roomIdInput.value.trim().toUpperCase();
+      studentName = nameInput.value.trim();
+
+      if (!roomId || !studentName) {
+        alert("Hãy nhập mã phòng và tên.");
+        return;
+      }
+
+      const snapshot = await get(ref(db, getRoomPath()));
+      if (!snapshot.exists()) {
+        alert("Phòng chưa tồn tại. Hãy nhờ giáo viên tạo phòng trước.");
+        return;
+      }
+
+      const oldPlayer = snapshot.val().players?.[studentId];
+      const oldScore = oldPlayer?.score || 0;
+
+      await set(ref(db, getPlayerPath()), {
+        name: studentName,
+        score: oldScore,
+        joinedAt: Date.now()
+      });
+
+      localStorage.setItem("quiz_room_id", roomId);
+      localStorage.setItem("quiz_student_name", studentName);
+
+      roomBadge.textContent = roomId;
+      joinCard.style.display = "none";
+      controller.style.display = "block";
+
+      attachRoomListener();
+    }
+
+    async function submitAnswer(answer) {
+      const snapshot = await get(ref(db, getRoomPath()));
+      if (!snapshot.exists()) return;
+
+      const state = snapshot.val();
+      if (state.status !== "question_open") return;
+      if (state.answers?.[studentId]) return;
+
+      await set(ref(db, getAnswerPath()), answer);
+      answerStatus.textContent = `Bạn đã chọn đáp án ${answer}.`;
+      disableButtons();
+    }
+
+    function attachRoomListener() {
+      if (currentRoomUnsubscribe) {
+        currentRoomUnsubscribe();
+        currentRoomUnsubscribe = null;
+      }
+
+      currentRoomUnsubscribe = onValue(ref(db, getRoomPath()), (snapshot) => {
+        const state = snapshot.val();
+
+        if (!state) {
+          alert("Phòng đã bị xoá.");
+          location.reload();
+          return;
+        }
+
+        const player = state.players?.[studentId];
+        scoreBadge.textContent = player?.score || 0;
+
+        const statusMap = {
+          waiting: "Chờ",
+          question_open: "Làm bài",
+          answer_revealed: "Đã chốt",
+          finished: "Xong"
+        };
+        statusBadge.textContent = statusMap[state.status] || "Chờ";
+
+        const currentQuestionIndex = state.currentQuestionIndex ?? -1;
+        const myAnswer = state.answers?.[studentId] || null;
+
+        if (currentQuestionIndex !== lastQuestionIndex) {
+          lastQuestionIndex = currentQuestionIndex;
+          answerStatus.textContent = "Bạn chưa chọn đáp án.";
+          disableButtons();
+        }
+
+        if (state.status === "waiting") {
+          promptLine.textContent = "Chờ giáo viên bắt đầu.";
+          answerStatus.textContent = "Bạn chưa chọn đáp án.";
+          disableButtons();
+        } else if (state.status === "question_open") {
+          promptLine.textContent = "Nhìn bảng và chọn A / B / C / D.";
+          if (myAnswer) {
+            answerStatus.textContent = `Bạn đã chọn đáp án ${myAnswer}.`;
+            disableButtons();
+          } else {
+            answerStatus.textContent = "Bạn chưa chọn đáp án.";
+            enableButtons();
+          }
+        } else if (state.status === "answer_revealed") {
+          promptLine.textContent = "Giáo viên đang hiện đáp án.";
+          answerStatus.textContent = myAnswer
+            ? `Bạn đã chọn đáp án ${myAnswer}.`
+            : "Bạn chưa gửi đáp án câu này.";
+          disableButtons();
+        } else if (state.status === "finished") {
+          promptLine.textContent = "Bài thi đã kết thúc.";
+          answerStatus.textContent = "Chờ xem tổng kết từ giáo viên.";
+          disableButtons();
+        }
+      });
+    }
+
+    joinBtn.addEventListener("click", joinRoom);
+
+    answerButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.classList.contains("disabled")) return;
+        submitAnswer(btn.dataset.answer);
+      });
+    });
+
+    const savedRoom = localStorage.getItem("quiz_room_id");
+    const savedName = localStorage.getItem("quiz_student_name");
+    if (savedRoom) roomIdInput.value = savedRoom;
+    if (savedName) nameInput.value = savedName;
+  </script>
+</body>
+</html>
