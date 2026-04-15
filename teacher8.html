@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quiz Giáo viên</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:"Be Vietnam Pro";
+  background:linear-gradient(135deg,#2b0b59,#120421);
+  color:white;
+}
+
+.top{
+  display:flex;
+  gap:10px;
+  padding:10px;
+}
+
+.box{
+  flex:1;
+  background:#1a1445;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+}
+
+.question{
+  background:white;
+  color:black;
+  margin:10px;
+  padding:20px;
+  border-radius:15px;
+  font-size:28px;
+  font-weight:800;
+}
+
+.answers{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:10px;
+}
+
+.ans{
+  padding:20px;
+  border-radius:15px;
+  font-size:22px;
+  font-weight:800;
+}
+
+.a{background:#e21b3c}
+.b{background:#1368ce}
+.c{background:#d89e00}
+.d{background:#26890c}
+
+.correct{
+  outline:5px solid white;
+}
+
+.controls{
+  display:flex;
+  gap:10px;
+  padding:10px;
+}
+
+.btn{
+  flex:1;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  font-size:18px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.main{background:#3b82f6}
+.reveal{background:#f59e0b}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <div class="box">Phòng<br><b id="room">----</b></div>
+  <div class="box">Người chơi<br><b id="players">0</b></div>
+  <div class="box">Câu<br><b id="qindex">0</b></div>
+</div>
+
+<div id="questionBox" class="question"></div>
+
+<div class="answers">
+  <div id="A" class="ans a"></div>
+  <div id="B" class="ans b"></div>
+  <div id="C" class="ans c"></div>
+  <div id="D" class="ans d"></div>
+</div>
+
+<div class="controls">
+  <button id="mainBtn" class="btn main">Tạo phòng</button>
+  <button id="revealBtn" class="btn reveal">Hiện đáp án</button>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase, ref, set, update, onValue, get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import { QUESTIONS } from "./questions.js";
+
+const config = {
+  apiKey:"AIzaSyBVbElFcTs66KuPlNZA7io48u7gv2Fv9EE",
+  authDomain:"kahoot-toan-11.firebaseapp.com",
+  databaseURL:"https://kahoot-toan-11-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"kahoot-toan-11"
+};
+
+const app = initializeApp(config);
+const db = getDatabase(app);
+
+let roomId="123";
+
+const roomRef=()=>ref(db,"rooms/"+roomId);
+
+const mainBtn=document.getElementById("mainBtn");
+const revealBtn=document.getElementById("revealBtn");
+
+function render(state){
+
+  document.getElementById("room").innerText=roomId;
+  document.getElementById("players").innerText=
+    Object.keys(state.players||{}).length;
+
+  let q=QUESTIONS[state.currentQuestionIndex];
+
+  document.getElementById("qindex").innerText=
+    (state.currentQuestionIndex+1)+"/"+QUESTIONS.length;
+
+  if(!q) return;
+
+  questionBox.innerHTML=q.text;
+
+  ["A","B","C","D"].forEach((k,i)=>{
+    let el=document.getElementById(k);
+    el.innerHTML=q.choices[i];
+    el.classList.remove("correct");
+
+    if(state.showAnswer && q.answer===k){
+      el.classList.add("correct");
+    }
+  });
+
+}
+
+onValue(roomRef(),snap=>{
+  if(!snap.exists()) return;
+  render(snap.val());
+});
+
+mainBtn.onclick=async()=>{
+
+  let snap=await get(roomRef());
+  let s=snap.val();
+
+  if(!snap.exists()){
+    await set(roomRef(),{
+      phase:"lobby",
+      players:{},
+      currentQuestionIndex:-1
+    });
+    return;
+  }
+
+  if(s.phase==="lobby"){
+    await update(roomRef(),{
+      phase:"question",
+      currentQuestionIndex:0,
+      showAnswer:false,
+      answers:{}
+    });
+  }
+
+  else if(s.phase==="question_review"){
+    await update(roomRef(),{
+      phase:"leaderboard"
+    });
+  }
+
+  else if(s.phase==="leaderboard"){
+    let next=s.currentQuestionIndex+1;
+
+    if(next>=QUESTIONS.length){
+      await update(roomRef(),{phase:"final"});
+    }else{
+      await update(roomRef(),{
+        phase:"question",
+        currentQuestionIndex:next,
+        showAnswer:false,
+        answers:{}
+      });
+    }
+  }
+};
+
+revealBtn.onclick=async()=>{
+  await update(roomRef(),{
+    phase:"question_review",
+    showAnswer:true
+  });
+};
+
+</script>
+</body>
+</html>
