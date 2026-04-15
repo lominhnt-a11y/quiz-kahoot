@@ -89,14 +89,14 @@ export const QUESTIONS = [
     ],
     answer: "A"
   },
-  {
-    text: `Câu 10. Cho bốn tập hợp A, B, C và \\(\\Omega\\), với \\(A \\subseteq \\Omega, B \\subseteq \\Omega\\). Tập hợp nào sau đây không phải tập con của \\(\\Omega\\)`,
-    choices: [
-      `\\(A \\cup B\\)`,
-      `\\(A \\cap B\\)`,
-      `\\(\\varnothing \\setminus B\\)`,
-      `\\(A \\cup C\\)`
-    ],
-    answer: "D"
-  }
+ {
+  text: `Câu 10. Cho bốn tập hợp A, B, C và \\(\\Omega\\), với \\(A \\subseteq \\Omega,\\ B \\subseteq \\Omega\\). Tập hợp nào sau đây không phải tập con của \\(\\Omega\\)`,
+  choices: [
+    `\\(A \\cup B\\)`,
+    `\\(A \\cap B\\)`,
+    `\\(\\varnothing \\setminus B\\)`,
+    `\\(A \\cup C\\)`
+  ],
+  answer: "D"
+}
 ];
